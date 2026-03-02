@@ -2,5 +2,10 @@ pandas
 numpy
 scikit-learn
 tqdm
-seaborn
+streamlit
+plotly
+joblib
+shap
 matplotlib
+networkx
+seaborn

@@ -44,6 +44,9 @@ def generate_bec_data(n_samples=2000):
         if finance_keywords[i] > 3:
             base_prob[i] *= 1.2
             
+    # Re-clamp probabilities after adjustments to keep them in valid range
+    base_prob = np.clip(base_prob, 0.05, 0.95)
+            
     # Determine the final label (1 or 0) based on the calculated probability
     labels = (np.random.rand(n_samples) < base_prob).astype(int)
     

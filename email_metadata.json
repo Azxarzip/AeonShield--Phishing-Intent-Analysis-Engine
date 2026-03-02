@@ -1,0 +1,23 @@
+{
+  "senders": {
+    "CEO": {
+      "name": "John Executive",
+      "profile": "CEO_Formal",
+      "style_baseline": null
+    },
+    "Manager1": {
+      "name": "Jane Manager",
+      "profile": "Manager_Casual",
+      "style_baseline": null
+    },
+    "Manager2": {
+      "name": "Bob Finance",
+      "profile": "Manager_Casual",
+      "style_baseline": null
+    }
+  },
+  "total_samples": 2000,
+  "n_malicious": 1537,
+  "n_ato": 318,
+  "generation_date": "2026-02-12T13:09:00.861343"
+}

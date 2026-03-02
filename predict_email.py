@@ -1,103 +1,71 @@
-import joblib
 import pandas as pd
-import numpy as np
+import joblib
+from ato_detector import analyze_incoming_email_for_ato, generate_ato_report
+from org_graph_analyzer import OrganizationalGraph
 
-# Define the filename where the trained model was saved
-# --- FIX: Changed from 'bec_detector_model.pkl' to 'model.pkl' to match your training output. ---
-MODEL_FILENAME = 'model.pkl'
-
-def predict_new_email(new_email_data):
+def predict_new_email_modern(sender_name, email_text, urgency, domain_sim, fin_keywords, req_type, sender_anom):
     """
-    Loads the trained model and predicts the class (Legitimate/Malicious) 
-    for a single, new email record.
+    Modern prediction script that uses the full 3nd-generation detection architecture.
+    Integrates Phase 1 (XAI) and Phase 2 (Stylometry/ATO).
     """
+    print("\n" + "="*75)
+    print("🛡️  AeonShield: Unified BEC Threat Analysis (CLI)")
+    print("="*75)
+    
+    # 1. Run Phase 1 & 2 Analysis
+    print(f"\n📨 Analyzing email from: {sender_name}...")
+    
+    result = analyze_incoming_email_for_ato(
+        sender_name=sender_name,
+        email_text=email_text,
+        urgency_score=urgency,
+        domain_similarity_score=domain_sim,
+        financial_keyword_count=fin_keywords,
+        request_type=req_type,
+        sender_anomaly=int(sender_anom)
+    )
+    
+    # 2. Display Phase 1 & 2 Report
+    print(generate_ato_report(result))
+    
+    # 3. Optional: Add Phase 3 (Organizational Graph) Analysis if graph exists
     try:
-        # Load the trained model
-        model = joblib.load(MODEL_FILENAME)
-        print(f"✅ Model '{MODEL_FILENAME}' successfully loaded.")
+        org_graph = joblib.load('org_graph.pkl')
+        anomalies = org_graph.detect_structural_anomalies(sender_name, 'Finance Department')
         
-        # 1. Prepare the new email data for prediction
+        print("\n" + "-"*75)
+        print("🔗 PHASE 3: ORGANIZATIONAL GRAPH ANALYSIS")
+        print("-"*75)
+        print(f"   Structural Anomaly Score: {anomalies['anomaly_score']:.2f}")
         
-        # Convert the dictionary to a DataFrame
-        df_new = pd.DataFrame([new_email_data])
-        
-        # Manually apply the same One-Hot Encoding used in feature_engineer.py
-        
-        # First, ensure the request_type is numeric
-        df_new['request_type'] = df_new['request_type'].astype(int)
-        
-        # Create dummy data template to ensure all 3 OHE columns exist
-        temp_data = {'request_type': [0, 1, 2]}
-        df_template = pd.DataFrame(temp_data)
-        df_template = pd.get_dummies(df_template, columns=['request_type'], prefix='req')
-        
-        # Filter down the template columns to only keep the OHE columns (req_X)
-        expected_cols = [col for col in df_template.columns if col.startswith('req_')]
-        
-        # Now apply OHE to the real data
-        df_processed = pd.get_dummies(df_new, columns=['request_type'], prefix='req')
-        
-        # Add missing columns (which will be 0) to match the expected training feature set
-        for col in expected_cols:
-            if col not in df_processed.columns:
-                df_processed[col] = 0
-        
-        # IMPORTANT: This order must match the feature names used during training!
-        # Your original features likely included 'body_length' and 'capitalization_ratio' 
-        # which were generated but then dropped in the test case below.
-        # Since we are focusing on the features passed in the dictionary, we use a subset.
-        # This list must match the column order the model expects.
-        feature_order = [
-            'urgency_score', 
-            'domain_similarity_score', 
-            'financial_keyword_count', 
-            'sender_anomaly', 
-            'req_0',  
-            'req_1',  
-            'req_2'   
-        ]
-        
-        # Filter and reorder
-        X_predict = df_processed.reindex(columns=feature_order, fill_value=0)
-        
-        # Convert to numpy array for the model
-        X_predict_array = X_predict.values
-        
-        # 2. Make Prediction
-        
-        # Predict the class (0 or 1)
-        prediction = model.predict(X_predict_array)[0]
-        
-        # Get the probability of being Malicious (class 1)
-        probability = model.predict_proba(X_predict_array)[0][1]
-        
-        print("\n--- Prediction Result ---")
-        if prediction == 1:
-            print(f"🚨 CLASSIFICATION: MALICIOUS (PHISHING/BEC ATTEMPT)")
-            print(f"   Confidence Score (Prob. of Malicious): {probability:.2f}")
+        if anomalies['anomalies_detected']:
+            print(f"   🚩 Anomalies: {', '.join(anomalies['anomalies_detected'])}")
         else:
-            print(f"✅ CLASSIFICATION: LEGITIMATE EMAIL")
-            print(f"   Confidence Score (Prob. of Malicious): {probability:.2f}")
-
+            print("   ✅ No structural anomalies detected")
+        print("-"*75)
     except FileNotFoundError:
-        print(f"\n❌ Error: Model file '{MODEL_FILENAME}' not found.")
-        print("Please ensure train_model.py ran successfully and saved the file.")
+        print("\n⚠️ Phase 3 Graph ('org_graph.pkl') not found. Skipping Phase 3 analysis.")
     except Exception as e:
-        print(f"\n❌ An error occurred during prediction: {e}")
-        print("This might be due to a mismatch in feature columns or the structure of the model.")
+        print(f"\n⚠️ Phase 3 error: {e}")
 
 if __name__ == '__main__':
-    
     # --- SIMULATE A HIGH-RISK INCOMING EMAIL ---
-    # Testing a highly suspicious email
-    suspicious_email = {
-        'urgency_score': 0.95,        
-        'domain_similarity_score': 0.90, 
-        'financial_keyword_count': 5, 
-        'request_type': 2,            
-        'sender_anomaly': 1           
-    }
-
-    print("--- Simulating New Email Data ---")
-    print(f"Testing a suspicious email: {suspicious_email}")
-    predict_new_email(suspicious_email)
+    # Testing a suspicious email that mimics an Account Takeover attempt
+    
+    ceo_spoof_email = """Hi finance team,
+    
+    I'm out of the office today but need a $250,000 wire transfer processed ASAP to our new retainer account. 
+    
+    Details: Acct ****5678. 
+    
+    Confirm as soon as this is done!!! ASAP!!!"""
+    
+    predict_new_email_modern(
+        sender_name="John Executive",  # CEO name used in simulations
+        email_text=ceo_spoof_email,
+        urgency=0.95,
+        domain_sim=0.0,            # High spoofing (same name, potentially same domain)
+        fin_keywords=5,
+        req_type=2,                # Wire Transfer
+        sender_anom=False          # It's a "known" sender, but style is off!
+    )

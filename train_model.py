@@ -43,6 +43,11 @@ def train_and_evaluate():
     joblib.dump(model, 'model.pkl')
     print("✅ Model saved to 'model.pkl'")
 
+    # Save feature names used by the model so predictions can align features correctly
+    feature_names = X.columns.tolist()
+    joblib.dump(feature_names, 'feature_names.pkl')
+    print("✅ Feature names saved to 'feature_names.pkl'")
+
     # 7. GRAPHICAL CONFUSION MATRIX
     print("\nGenerating Confusion Matrix Plot...")
     cm = confusion_matrix(y_test, y_pred)
@@ -57,11 +62,9 @@ def train_and_evaluate():
     plt.xlabel('Predicted Category')
     
     # Save the plot as an image for your report
-    plt.savefig('confusion_matrix.png')
+    plt.savefig('confusion_matrix.png', bbox_inches='tight')
     print("✅ Plot saved as 'confusion_matrix.png'")
-    
-    # Show the plot window
-    plt.show()
+    plt.close()
 
 if __name__ == "__main__":
     train_and_evaluate()
