@@ -28,6 +28,30 @@ class BECExplainer:
         
         # Initialize SHAP explainer (TreeExplainer for RandomForest)
         self.explainer = shap.TreeExplainer(model)
+
+    def _shap_values_malicious_row(self, X_pred: pd.DataFrame) -> np.ndarray:
+        """Normalize SHAP outputs across shap versions (list vs ndarray, binary layout)."""
+        shap_values = self.explainer.shap_values(X_pred)
+        if isinstance(shap_values, list):
+            # Binary TreeExplainer: [class0, class1], each (n_samples, n_features)
+            pos = shap_values[1] if len(shap_values) > 1 else shap_values[0]
+            arr = np.asarray(pos)
+            return np.asarray(arr[0]).ravel() if arr.ndim >= 2 else arr.ravel()
+        arr = np.asarray(shap_values)
+        if arr.ndim == 3:
+            return np.asarray(arr[0, :, 1]).ravel()
+        if arr.ndim == 2:
+            return np.asarray(arr[0]).ravel()
+        return arr.ravel()
+
+    def _expected_value_malicious(self) -> float:
+        ev = self.explainer.expected_value
+        if isinstance(ev, (list, tuple, np.ndarray)):
+            flat = np.atleast_1d(np.asarray(ev, dtype=float))
+            if flat.size > 1:
+                return float(flat[1])
+            return float(flat[0])
+        return float(ev)
         
     def explain_prediction(self, X_pred: pd.DataFrame) -> Dict[str, Any]:
         """
@@ -43,15 +67,10 @@ class BECExplainer:
         prediction = self.model.predict(X_pred)[0]
         probability = self.model.predict_proba(X_pred)[0][1]  # Prob of Malicious (class 1)
         
-        # Get SHAP values
-        shap_values = self.explainer.shap_values(X_pred)
-        
-        # For TreeExplainer with binary classification, shap_values is (n_samples, n_features, n_classes)
-        # We need values for class 1 (Malicious) - shape is (n_features, 2)
-        shap_class_1 = shap_values[0, :, 1]  # First sample, all features, class 1
-        
-        # Get base value (expected model output)
-        base_value = self.explainer.expected_value[1]
+        shap_class_1 = self._shap_values_malicious_row(X_pred)
+        n = min(len(shap_class_1), len(self.feature_names))
+        shap_class_1 = np.asarray(shap_class_1[:n], dtype=float)
+        base_value = self._expected_value_malicious()
         
         # Calculate feature contributions (absolute SHAP values)
         feature_importance = np.abs(shap_class_1)
@@ -61,7 +80,7 @@ class BECExplainer:
         
         # Create detailed explanation
         explanation = {
-            'prediction': 'MALICIOUS' if prediction == 1 else 'LEGITIMATE',
+            'prediction': 'MALICIOUS' if int(prediction) == 1 else 'LEGITIMATE',
             'confidence_score': float(probability),
             'risk_level': self._calculate_risk_level(probability),
             'base_score': float(base_value),
@@ -107,8 +126,11 @@ class BECExplainer:
             total_abs_shap = 1  # Avoid division by zero
         
         contributions = {}
+        n = min(len(shap_vals), len(self.feature_names), X_pred.shape[1])
         
         for idx in sorted_indices[:5]:  # Top 5 features
+            if idx >= n:
+                continue
             feature_name = self.feature_names[idx]
             feature_value = X_pred.iloc[0, idx]
             shap_value = float(shap_vals[idx])
@@ -228,17 +250,16 @@ class BECExplainer:
             X_pred: DataFrame with prediction
             save_path: Path to save the image (optional)
         """
-        shap_values = self.explainer.shap_values(X_pred)
-        
-        # Get SHAP values for class 1 (Malicious) - shape is (n_features, 2)
-        shap_class_1 = shap_values[0, :, 1]  # First sample, all features, class 1
-        
+        shap_class_1 = self._shap_values_malicious_row(X_pred)
+        n = min(len(shap_class_1), len(self.feature_names))
+        shap_class_1 = np.asarray(shap_class_1[:n], dtype=float)
+
         # Create figure with bar plot
         plt.figure(figsize=(12, 6))
         
         # Plot SHAP values as horizontal bar chart
         indices = np.argsort(np.abs(shap_class_1))[-10:]  # Top 10
-        colors = ['red' if x > 0 else 'blue' for x in shap_class_1[indices]]
+        colors = ['red' if shap_class_1[i] > 0 else 'blue' for i in indices]
         plt.barh(range(len(indices)), shap_class_1[indices], color=colors)
         plt.yticks(range(len(indices)), [self.feature_names[i] for i in indices])
         plt.xlabel('SHAP Value (Impact on Prediction)')

@@ -108,5 +108,9 @@ def preprocess_features_for_prediction(email_text: str,
     request_type = int(request_type) if request_type is not None else 0
     df_new['request_type'] = min(max(request_type, 0), 2)
     df_processed = pd.get_dummies(df_new, columns=['request_type'], prefix='req_type')
-    
+    # Single-row get_dummies omits absent categories; model expects all three columns
+    for col in ['req_type_0', 'req_type_1', 'req_type_2']:
+        if col not in df_processed.columns:
+            df_processed[col] = 0
+
     return df_processed

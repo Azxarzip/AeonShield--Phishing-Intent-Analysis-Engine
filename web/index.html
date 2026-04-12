@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AeonShield — BEC & Phishing Detection</title>
+  <meta name="description" content="ML pipeline for Business Email Compromise and phishing detection with explainable AI and stylometry." />
+  <style>
+    :root {
+      --bg: #050508;
+      --card: rgba(19, 19, 19, 0.85);
+      --cyan: #00d4ff;
+      --muted: #859398;
+      --green: #39ff14;
+      --border: rgba(0, 212, 255, 0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: #fff;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0, 212, 255, 0.12), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 100% 40%, rgba(168, 85, 247, 0.08), transparent 45%);
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0 0 0.5rem;
+      color: var(--cyan);
+    }
+    p.lead {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 1.5rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.25rem;
+      text-decoration: none;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+      border: 1px solid var(--cyan);
+      color: var(--bg);
+      background: var(--cyan);
+      margin-right: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--cyan);
+    }
+    .note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    code {
+      background: rgba(0, 212, 255, 0.1);
+      padding: 0.15rem 0.4rem;
+      font-size: 0.85em;
+    }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .status {
+      color: var(--green);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="status">Security analytics</div>
+    <h1>AeonShield</h1>
+    <p class="lead">
+      End-to-end pipeline for <strong>Business Email Compromise</strong> and phishing detection:
+      Random Forest classification, SHAP explanations, stylometry, and optional organizational graph analysis.
+    </p>
+
+    <div class="card">
+      <p class="note" style="margin-top: 0;">
+        <strong>Live dashboard:</strong> after you deploy the app on
+        <a href="https://streamlit.io/cloud" style="color: var(--cyan);">Streamlit Community Cloud</a>,
+        paste your app URL into <code>web/index.html</code> (see <code>STREAMLIT_APP_URL</code> below) and redeploy this site on Vercel.
+      </p>
+      <a id="dashboard-link" class="btn" href="#">Launch dashboard</a>
+      <a class="btn secondary" href="https://github.com/sayuj5/AeonShield--Phishing-Intent-Analysis-Engine">View on GitHub</a>
+    </div>
+
+    <div class="card">
+      <p class="note" style="margin-top: 0;">
+        <strong>Run locally:</strong>
+      </p>
+      <pre style="margin: 0; overflow-x: auto; font-size: 0.8rem; color: var(--muted);"><code>git clone https://github.com/sayuj5/AeonShield--Phishing-Intent-Analysis-Engine.git
+cd AeonShield--Phishing-Intent-Analysis-Engine
+python -m venv .venv
+pip install -r requirements.txt
+streamlit run dashboard.py</code></pre>
+    </div>
+
+    <footer>
+      Behala Government Polytechnic — final year project. README includes full Vercel and Streamlit Cloud steps.
+    </footer>
+  </main>
+  <script>
+    const STREAMLIT_APP_URL = "https://YOUR-APP-NAME.streamlit.app";
+    const el = document.getElementById("dashboard-link");
+    el.href = STREAMLIT_APP_URL;
+    if (STREAMLIT_APP_URL.includes("YOUR-APP-NAME")) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        alert("Set STREAMLIT_APP_URL in web/index.html to your Streamlit Cloud URL, then redeploy on Vercel.");
+      });
+    }
+  </script>
+</body>
+</html>
