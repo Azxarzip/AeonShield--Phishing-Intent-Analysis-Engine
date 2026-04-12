@@ -87,9 +87,9 @@ Open your browser at `http://localhost:8501`.
 This project was developed as part of the academic requirement for the final year.
 
 **Project Team Members:**
-*   **Akash Basak**: Lead Backend Developer & Integration Architect
-*   **Abhiraj Kumar Rajak**: Machine Learning Researcher & Stylometry Expert
-*   **Subhamita Mondal**: Security Analyst & UI Designer
+*   **Akash**: Lead Backend Developer & Integration Architect
+*   **Abhiraj**: Machine Learning Researcher & Stylometry Expert
+*   **Abhirup **: Security Analyst & UI Designer
 
 **Institution:** Students of **Behala Government Polytechnic**
 
