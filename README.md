@@ -89,12 +89,12 @@ This project was developed as part of the academic requirement for the final yea
 **Project Team Members:**
 *   **Akash**: Lead Backend Developer & Integration Architect
 *   **Abhiraj**: Machine Learning Researcher & Stylometry Expert
-*   **Abhirup **: Security Analyst & UI Designer
+*   **Abhirup**: Security Analyst & UI Designer
 
 **Institution:** Students of **Behala Government Polytechnic**
 
 **Mentorship:**
-*   **Sayuj Sur**: Industry Expert & Project Advisor
+*   **Sayuj Sur**:  Project Advisor
 
 **Supervision:**
 *   **Dr. Partha Sarathi Goswami**: Academic Supervisor
