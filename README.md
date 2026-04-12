@@ -1,6 +1,5 @@
 # AeonShield: BEC & Phishing Detection Engine
 
-**Repository:** [https://github.com/sayuj5/AeonShield--Phishing-Intent-Analysis-Engine](https://github.com/sayuj5/AeonShield--Phishing-Intent-Analysis-Engine)
 
 ![AeonShield Logo](AeonShiled%20Logo.png)
 
